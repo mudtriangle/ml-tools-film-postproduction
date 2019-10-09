@@ -1,0 +1,6 @@
+# General:
+pip==19.2.3
+moviepy==1.0.1
+
+# PDF parsing:
+pdfminer.six==20181108
