@@ -9,8 +9,10 @@ import os
 
 DIR = '../test_data'
 
+SCENE_HEADINGS = ['INT ', 'EXT ', 'INT.', 'EXT.' 'CREDIT', 'DAY', 'NIGHT']
 
-def get_string(path):
+
+def string_from_pdf(path):
     """
     Function that takes the path to a PDF file and returns a string with the text contents from the PDF.
     Uses PDFMiner and StringIO.
@@ -50,10 +52,45 @@ def get_string(path):
     return text
 
 
+"""
 # Call the get_string() function for all of the test cases in test_data.
 scripts = os.listdir(DIR)
 for script in scripts:
     input_file_path = DIR + '/' + script
     output_file_path = '../test_outputs/' + script[:-4] + '.txt'
     with open(output_file_path, 'w') as output_file:
-        output_file.write(get_string(input_file_path))
+        output_file.write(string_from_pdf(input_file_path))
+"""
+
+
+class Script:
+    def __init__(self, path):
+        text = string_from_pdf(path)
+        self.scenes = []
+
+        text = text.split('\n')
+        scene_text = ''
+        for line in text:
+            is_heading = False
+            for heading in SCENE_HEADINGS:
+                if heading in line:
+                    is_heading = True
+                    break
+
+            if is_heading:
+                self.scenes.append(scene_text)
+                scene_text = line + '\n'
+
+            else:
+                scene_text += line + '\n'
+
+        self.scenes.append(scene_text)
+
+
+script = Script(DIR + '/ToyStory3.pdf')
+i = 0
+for scene in script.scenes:
+    print('Scene %i' % i)
+    print(scene)
+    print('\n')
+    i += 1
