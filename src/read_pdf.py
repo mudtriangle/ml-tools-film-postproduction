@@ -84,13 +84,24 @@ class Script:
             else:
                 scene_text += line + '\n'
 
-        self.scenes.append(scene_text)
+        self.scenes.append(Scene(scene_text))
+
+    def __str__(self):
+        to_print = ''
+        for scene in self.scenes:
+            to_print += str(scene) + '\n'
+        return to_print
+
+
+class Scene:
+    def __init__(self, text):
+        text = text.split('\n')
+        self.header = text[0]
+        self.body = '\n'.join(text[1:])
+
+    def __str__(self):
+        return self.header + '\n' + self.body
 
 
 script = Script(DIR + '/ToyStory3.pdf')
-i = 0
-for scene in script.scenes:
-    print('Scene %i' % i)
-    print(scene)
-    print('\n')
-    i += 1
+print(script.scenes[-1])
