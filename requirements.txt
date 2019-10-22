@@ -8,3 +8,4 @@ pdfminer.six==20181108
 
 # Natural language processing:
 nltk==3.4.5
+SpeechRecognition==3.8.1
