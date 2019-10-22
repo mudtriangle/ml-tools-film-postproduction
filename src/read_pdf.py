@@ -4,8 +4,8 @@ from pdfminer.layout import LAParams
 from pdfminer.pdfpage import PDFPage
 
 from io import StringIO
-import os
 
+from string_processing import normalize, tokenize, get_ngrams
 
 DIR = '../test_data'
 
@@ -78,7 +78,7 @@ class Script:
                     break
 
             if is_heading:
-                self.scenes.append(scene_text)
+                self.scenes.append(Scene(scene_text))
                 scene_text = line + '\n'
 
             else:
@@ -98,10 +98,10 @@ class Scene:
         text = text.split('\n')
         self.header = text[0]
         self.body = '\n'.join(text[1:])
+        self.tokens = tokenize(normalize(self.body))
 
     def __str__(self):
         return self.header + '\n' + self.body
 
-
-script = Script(DIR + '/ToyStory3.pdf')
-print(script.scenes[-1])
+    def get_ngrams(self, n):
+        return get_ngrams(self.tokens, n)
