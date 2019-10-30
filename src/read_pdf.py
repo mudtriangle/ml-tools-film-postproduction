@@ -3,11 +3,11 @@ from pdfminer.converter import TextConverter
 from pdfminer.layout import LAParams
 from pdfminer.pdfpage import PDFPage
 
+from bs4 import BeautifulSoup
+
 from io import StringIO
 
 from string_processing import normalize, tokenize, get_ngrams
-
-import xml.etree.cElementTree as ET
 
 DIR = '../test_data'
 
@@ -92,10 +92,16 @@ class Script:
             self.scenes.append(Scene(scene_text))
 
         elif ftype == 'fdx':
-            tree = ET.parse(path)
-            root = tree.getroot()
-
-            print(s)
+            with open(path, 'r') as f:
+                soup = BeautifulSoup(f, 'lxml')
+            # print(soup.prettify())
+            res = soup.find_all('paragraph')
+            for elm in res:
+                try:
+                    print(elm['type'])
+                    print(elm.text.strip())
+                except KeyError:
+                    pass
 
     def __str__(self):
         to_print = ''
