@@ -3,8 +3,9 @@ pip==19.3.1
 moviepy==1.0.1
 numpy==1.17.2
 
-# PDF parsing:
+# Script parsing:
 pdfminer.six==20181108
+beautifulsoup4==4.8.1
 
 # Natural language processing:
 nltk==3.4.5

@@ -7,6 +7,8 @@ from io import StringIO
 
 from string_processing import normalize, tokenize, get_ngrams
 
+import xml.etree.cElementTree as ET
+
 DIR = '../test_data'
 
 SCENE_HEADINGS = ['INT ', 'EXT ', 'INT.', 'EXT.' 'CREDIT', 'DAY', 'NIGHT']
@@ -65,26 +67,35 @@ for script in scripts:
 
 class Script:
     def __init__(self, path):
-        text = string_from_pdf(path)
-        self.scenes = []
+        ftype = path.split('.')[-1]
 
-        text = text.split('\n')
-        scene_text = ''
-        for line in text:
-            is_heading = False
-            for heading in SCENE_HEADINGS:
-                if heading in line:
-                    is_heading = True
-                    break
+        if ftype == 'pdf':
+            text = string_from_pdf(path)
+            self.scenes = []
 
-            if is_heading:
-                self.scenes.append(Scene(scene_text))
-                scene_text = line + '\n'
+            text = text.split('\n')
+            scene_text = ''
+            for line in text:
+                is_heading = False
+                for heading in SCENE_HEADINGS:
+                    if heading in line:
+                        is_heading = True
+                        break
 
-            else:
-                scene_text += line + '\n'
+                if is_heading:
+                    self.scenes.append(Scene(scene_text))
+                    scene_text = line + '\n'
 
-        self.scenes.append(Scene(scene_text))
+                else:
+                    scene_text += line + '\n'
+
+            self.scenes.append(Scene(scene_text))
+
+        elif ftype == 'fdx':
+            tree = ET.parse(path)
+            root = tree.getroot()
+
+            print(s)
 
     def __str__(self):
         to_print = ''
@@ -105,3 +116,6 @@ class Scene:
 
     def get_ngrams(self, n):
         return get_ngrams(self.tokens, n)
+
+
+script = Script('../test_data/i_spy.fdx')
