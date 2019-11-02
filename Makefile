@@ -4,4 +4,4 @@ build-docker:
 	docker run --cpus 4 --cpu-shares 1024 --name capstone_project -d -v $(PWD):/app:rw capstone_project:1.0
 
 run:
-	docker exec -it capstone_project bash -c "cd src && python read_pdf.py"
+	docker exec -it capstone_project bash -c "cd src && python screenplay.py"

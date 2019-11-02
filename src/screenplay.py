@@ -68,10 +68,10 @@ for script in scripts:
 class Script:
     def __init__(self, path):
         ftype = path.split('.')[-1]
+        self.scenes = []
 
         if ftype == 'pdf':
             text = string_from_pdf(path)
-            self.scenes = []
 
             text = text.split('\n')
             scene_text = ''
@@ -83,25 +83,33 @@ class Script:
                         break
 
                 if is_heading:
-                    self.scenes.append(Scene(scene_text))
+                    self.scenes.append(Scene(text=scene_text))
                     scene_text = line + '\n'
 
                 else:
                     scene_text += line + '\n'
-
-            self.scenes.append(Scene(scene_text))
+            self.scenes.append(Scene(text=scene_text))
 
         elif ftype == 'fdx':
             with open(path, 'r') as f:
                 soup = BeautifulSoup(f, 'lxml')
-            # print(soup.prettify())
             res = soup.find_all('paragraph')
+
+            elements = []
             for elm in res:
                 try:
-                    print(elm['type'])
-                    print(elm.text.strip())
+                    elements.append((elm['type'], elm.text.strip()))
                 except KeyError:
                     pass
+
+            curr_scene = []
+            for pair in elements:
+                if pair[0] == 'Scene Heading':
+                    self.scenes.append(Scene(lines=curr_scene))
+                    curr_scene = []
+
+                curr_scene.append(pair)
+            self.scenes.append(Scene(lines=curr_scene))
 
     def __str__(self):
         to_print = ''
@@ -111,17 +119,40 @@ class Script:
 
 
 class Scene:
-    def __init__(self, text):
-        text = text.split('\n')
-        self.header = text[0]
-        self.body = '\n'.join(text[1:])
-        self.tokens = tokenize(normalize(self.body))
+    def __init__(self, text='', lines=[]):
+        if text != '':
+            text = text.split('\n')
+            self.header = text[0]
+            self.body = '\n'.join(text[1:])
+            self.tokens = tokenize(normalize(self.body))
+
+        elif len(lines) != 0:
+            if lines[0][0] == 'Scene Heading':
+                self.header = lines[0][1]
+            else:
+                self.header = 'No header'
+
+            self.body = ''
+            self.characters = []
+            self.actions = []
+            self.dialogues = []
+            for i in range(1, len(lines)):
+                self.body += lines[i][1] + '\n'
+
+                if lines[i][0] == 'Character':
+                    if lines[i][1] not in self.characters:
+                        self.characters.append(lines[i][1])
+                elif lines[i][0] == 'Action':
+                    self.actions.append(lines[i][1])
+                elif lines[i][0] == 'Dialogue':
+                    self.dialogues.append((lines[i - 1][1], lines[i][1]))
 
     def __str__(self):
         return self.header + '\n' + self.body
 
-    def get_ngrams(self, n):
-        return get_ngrams(self.tokens, n)
+    def get_dialogue_ngrams(self, n):
+        full_text = ''
+        for dia in self.dialogues:
+            full_text += dia[1] + ' '
 
-
-script = Script('../test_data/i_spy.fdx')
+        return get_ngrams(tokenize(normalize(full_text)), n)
