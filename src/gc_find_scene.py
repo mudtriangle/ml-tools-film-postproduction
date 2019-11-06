@@ -16,7 +16,7 @@ config = {"language_code": 'en-US',
           "profanity_filter": False,
           "audio_channel_count": 2}
 
-with io.open('../test_data/taxi_driver_001-0.wav', "rb") as f:
+with io.open('../test_data/taxi_driver_003-0.wav', "rb") as f:
     content = f.read()
 audio = {"content": content}
 
