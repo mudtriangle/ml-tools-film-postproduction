@@ -13,3 +13,4 @@ beautifulsoup4==4.8.1
 nltk==3.4.5
 SpeechRecognition==3.8.1
 deepspeech==0.5.1
+google-cloud-speech==1.2.0

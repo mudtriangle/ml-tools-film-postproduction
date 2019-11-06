@@ -1,3 +1,8 @@
+#
+#  Will translate for Google Cloud Speech because of the outstanding performance in comparison.
+#
+
+
 from moviepy.editor import VideoFileClip
 from deepspeech import Model
 import scipy.io.wavfile as wav
@@ -5,6 +10,7 @@ import numpy as np
 import speech_recognition as sr
 from screenplay import Script
 from string_processing import normalize, tokenize, get_ngrams
+import json
 
 '''
 vid = VideoFileClip('../test_data/BMPCC_1_2017-12-02_2143_C0027_2.mp4')
@@ -23,10 +29,14 @@ processed_data = ds.stt(audio, fs)
 print(processed_data)
 '''
 
-r = sr.Recognizer()
-test = sr.AudioFile('../test_data/sample_dialogue.wav')
+with open('../api_keys/google_cloud.json', 'r') as f:
+    api_google_cloud = json.load(f)
+api_google_cloud = json.dumps(api_google_cloud)
 
-noise = sr.AudioFile('../test_data/sample_noise.wav')
+r = sr.Recognizer()
+test = sr.AudioFile('../test_data/taxi_driver_002-0.wav')
+
+noise = sr.AudioFile('../test_data/taxi_driver_002-1.wav')
 
 with noise as ns:
     r.adjust_for_ambient_noise(ns)
@@ -34,10 +44,10 @@ with noise as ns:
 with test as source:
     audio = r.record(source)
 
-output = r.recognize_google(audio, show_all=True)
+output = r.recognize_google_cloud(audio, show_all=True, credentials_json=api_google_cloud)
+print(output)
 
-
-screenplay = Script('../test_data/taxi_driver.fdx')
+screenplay = Script('../test_data/taxi_driver_script.fdx')
 
 scores = []
 for scene in screenplay.scenes:
@@ -56,4 +66,3 @@ if scores[match] == 0:
     print('No scene found.')
 else:
     print(screenplay.scenes[match])
-
