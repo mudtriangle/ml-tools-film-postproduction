@@ -5,12 +5,16 @@ from pdfminer.pdfpage import PDFPage
 
 from bs4 import BeautifulSoup
 
-from io import StringIO
+import io
+import os
 
 from string_processing import normalize, tokenize, get_ngrams
+from google.cloud import speech_v1
+from google.cloud.speech_v1 import enums
+import numpy as np
 
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = '../api_keys/google_cloud.json'
 DIR = '../test_data'
-
 SCENE_HEADINGS = ['INT ', 'EXT ', 'INT.', 'EXT.' 'CREDIT', 'DAY', 'NIGHT']
 
 
@@ -29,7 +33,7 @@ def string_from_pdf(path):
 
     # Initialize ResourceManager, output StringIO, and LAParams.
     rsrcmgr = PDFResourceManager()
-    retstr = StringIO()
+    retstr = io.StringIO()
     laparams = LAParams()
 
     # Create TextConverter and PageInterpreter.
@@ -52,17 +56,6 @@ def string_from_pdf(path):
     retstr.close()
 
     return text
-
-
-"""
-# Call the get_string() function for all of the test cases in test_data.
-scripts = os.listdir(DIR)
-for script in scripts:
-    input_file_path = DIR + '/' + script
-    output_file_path = '../test_outputs/' + script[:-4] + '.txt'
-    with open(output_file_path, 'w') as output_file:
-        output_file.write(string_from_pdf(input_file_path))
-"""
 
 
 class Script:
@@ -111,6 +104,54 @@ class Script:
                 curr_scene.append(pair)
             self.scenes.append(Scene(lines=curr_scene))
 
+    def find_scene_from_audio(self, path_to_audio):
+        client = speech_v1.SpeechClient()
+
+        config = {"language_code": 'en-US',
+                  "sample_rate_hertz": 48000,
+                  "encoding": enums.RecognitionConfig.AudioEncoding.LINEAR16,
+                  "profanity_filter": False,
+                  "audio_channel_count": 2}
+
+        with io.open(path_to_audio, 'rb') as f:
+            content = f.read()
+        audio = {"content": content}
+
+        response = client.recognize(config, audio)
+
+        alternatives = []
+        max_n = None
+        for result in response.results:
+            alternative = result.alternatives[0]
+            tokens = tokenize(normalize(alternative.transcript))
+
+            if max_n is None:
+                max_n = len(tokens)
+            if max_n > len(tokens):
+                max_n = len(tokens)
+
+            alternatives.append(tokens)
+
+        scores = []
+        for scene in self.scenes:
+            curr_score = 0
+
+            for num_ngrams in range(1, min([6, max_n])):
+                scene_ngrams = scene.get_ngrams(num_ngrams)
+                for alt in alternatives:
+                    dialogue = get_ngrams(alt, num_ngrams)
+                    for ngram in dialogue:
+                        if ngram in scene_ngrams:
+                            curr_score += 1
+
+            scores.append(curr_score)
+
+        match = np.argmax(scores)
+        if scores[match] == 0:
+            return None
+        else:
+            return match
+
     def __str__(self):
         to_print = ''
         for scene in self.scenes:
@@ -150,7 +191,7 @@ class Scene:
     def __str__(self):
         return self.header + '\n' + self.body
 
-    def get_dialogue_ngrams(self, n):
+    def get_ngrams(self, n):
         full_text = ''
         for dia in self.dialogues:
             full_text += dia[1] + ' '
