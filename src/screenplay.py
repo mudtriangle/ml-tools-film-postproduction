@@ -58,7 +58,7 @@ def string_from_pdf(path):
     return text
 
 
-class Script:
+class Screenplay:
     def __init__(self, path):
         ftype = path.split('.')[-1]
         self.scenes = []
