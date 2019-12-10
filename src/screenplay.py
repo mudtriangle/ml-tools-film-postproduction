@@ -124,7 +124,7 @@ class Screenplay:
             curr_scene = []
             for pair in elements:
                 # Each time a heading is found, make a scene out of the previous elements.
-                if pair[0] == 'Scene Heading':
+                if pair[0] == 'Scene Heading' and curr_scene != []:
                     self.scenes.append(Scene(lines=curr_scene))
                     curr_scene = []
 
@@ -133,14 +133,9 @@ class Screenplay:
             # The remaining elements are the final scene.
             self.scenes.append(Scene(lines=curr_scene))
 
-    def find_scene_from_audio(self, path_to_audio):
+    def find_scene_from_audio(self, path_to_audio, config):
         # Initialize Google Cloud Speech client. Needs dynamic management of config.
         client = speech_v1.SpeechClient()
-        config = {"language_code": 'en-US',
-                  "sample_rate_hertz": 48000,
-                  "encoding": enums.RecognitionConfig.AudioEncoding.LINEAR16,
-                  "profanity_filter": False,
-                  "audio_channel_count": 2}
 
         # Open audio file.
         with io.open(path_to_audio, 'rb') as f:
@@ -191,6 +186,27 @@ class Screenplay:
         else:
             return match
 
+    def find_scene_from_transcript(self, transcript):
+        tokens = tokenize(normalize(transcript))
+        scores = []
+        for scene in self.scenes:
+            curr_score = 0
+
+            for num_ngrams in range(1, 6):
+                scene_ngrams = scene.get_ngrams(num_ngrams)
+                dialogue = get_ngrams(tokens, num_ngrams)
+                for ngram in dialogue:
+                    if ngram in scene_ngrams:
+                        curr_score += 1
+
+            scores.append(curr_score)
+
+        match = np.argmax(scores)
+        if scores[match] == 0:
+            return None
+        else:
+            return match
+
     def __str__(self):
         # When called to print, print the text in every scene separated by a return character.
         to_print = ''
@@ -229,13 +245,21 @@ class Scene:
             self.characters = []
             self.actions = []
             self.dialogues = []
+            last_character = ''
             for i in range(1, len(lines)):
                 self.body += lines[i][1] + '\n'
 
                 # If the element is character, add it if it's not already in the list of characters.
                 if lines[i][0] == 'Character':
-                    if lines[i][1] not in self.characters:
-                        self.characters.append(lines[i][1])
+                    character = lines[i][1]
+
+                    # Gets rid of (V.O.), (CONT'D), etc.
+                    if character.find(' (') != -1:
+                        character = character[0:character.find(' (')]
+
+                    last_character = character
+                    if character not in self.characters:
+                        self.characters.append(character)
 
                 # If the element is an action, add it to the list of actions.
                 elif lines[i][0] == 'Action':
@@ -244,7 +268,7 @@ class Scene:
                 # If the element is dialogue, add it to the list of dialogues in a tuple of the form
                 # (name of the character, dialogue).
                 elif lines[i][0] == 'Dialogue':
-                    self.dialogues.append((lines[i - 1][1], lines[i][1]))
+                    self.dialogues.append((last_character, lines[i][1]))
 
     def __str__(self):
         # When called to print, print the header and the body separated by a return character.

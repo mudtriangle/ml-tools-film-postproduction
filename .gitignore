@@ -3,3 +3,5 @@
 __pycache__
 api_keys
 caffe_model
+test_data/full_taxi_driver.mp4
+test_liene
