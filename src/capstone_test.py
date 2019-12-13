@@ -64,4 +64,4 @@ for file in audio_files:
     files_dict['../test_liene/audio/' + file] = audio_info
 
 with open('../test_liene/file_structure.json', 'w') as f:
-    json.dump(files_dict, f)
+    json.dump(files_dict, f, indent=4)
