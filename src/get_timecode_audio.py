@@ -22,7 +22,7 @@ def get_timecode_video_file(video_path, frames, channel):
 
     audio.write_audiofile(output_path)
 
-    tc = get_audio_timecode_file(output_path, frames, channel)
+    tc = get_timecode_audio_file(output_path, frames, channel)
 
     os.remove(output_path)
     return tc

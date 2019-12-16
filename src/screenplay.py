@@ -66,7 +66,7 @@ class Screenplay:
     """
     Class that holds a screenplay parsed from a PDF file (still in progress) or a Final Draft FDX file (currently
     functioning). Allows for identification of characters, actions, dialogue, and locations. Currently supports finding
-    scenes through audio files that contain dialogue.
+    scenes through transcripts.
     """
     def __init__(self, path):
         # Identify the type of file in the path.
