@@ -8,9 +8,6 @@ from string_processing import normalize, tokenize, get_ngrams
 # External libraries
 from bs4 import BeautifulSoup
 
-from google.cloud import speech_v1
-from google.cloud.speech_v1 import enums
-
 import numpy as np
 
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
@@ -133,61 +130,13 @@ class Screenplay:
             # The remaining elements are the final scene.
             self.scenes.append(Scene(lines=curr_scene))
 
-    def find_scene_from_audio(self, path_to_audio, config):
-        # Initialize Google Cloud Speech client. Needs dynamic management of config.
-        client = speech_v1.SpeechClient()
-
-        # Open audio file.
-        with io.open(path_to_audio, 'rb') as f:
-            content = f.read()
-        audio = {"content": content}
-
-        # Get response from Google Cloud Speech.
-        response = client.recognize(config, audio)
-
-        # Parse responses.
-        alternatives = []
-        max_n = None
-        for result in response.results:
-            alternative = result.alternatives[0]
-            # Create tokens out of normalized responses.
-            tokens = tokenize(normalize(alternative.transcript))
-
-            # Keep track of the maximum number of words for ngram search.
-            if max_n is None:
-                max_n = len(tokens)
-            if max_n > len(tokens):
-                max_n = len(tokens)
-
-            alternatives.append(tokens)
-
-        # Iterate through all the scenes.
-        scores = []
-        for scene in self.scenes:
-            # Keep a score for each scene.
-            curr_score = 0
-
-            # Use max_n - 1 or 5 as the maximum n of ngram combinations possible.
-            for num_ngrams in range(1, min([6, max_n])):
-                scene_ngrams = scene.get_ngrams(num_ngrams)
-                for alt in alternatives:
-                    dialogue = get_ngrams(alt, num_ngrams)
-                    for ngram in dialogue:
-                        if ngram in scene_ngrams:
-                            # Every time there is a match, increase score by one.
-                            curr_score += 1
-
-            scores.append(curr_score)
-
-        # Return the index of the scene with the highest score, unless the highest score is zero.
-        match = np.argmax(scores)
-        if scores[match] == 0:
-            return None
-        else:
-            return match
-
     def find_scene_from_transcript(self, transcript):
-        tokens = tokenize(normalize(transcript))
+        transcript_text = ''
+        for t in transcript.keys():
+            for alternative in transcript[t]:
+                transcript_text += ' ' + alternative
+
+        tokens = tokenize(normalize(transcript_text))
         scores = []
         for scene in self.scenes:
             curr_score = 0
