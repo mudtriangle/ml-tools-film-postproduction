@@ -3,7 +3,7 @@ import os
 from moviepy import editor
 
 
-def get_audio_timecode_file(audio_path, frames, channel):
+def get_timecode_audio_file(audio_path, frames, channel):
     res = subprocess.run(['ltcdump', audio_path, '-f', frames, '-c', channel], stdout=subprocess.PIPE)
     try:
         output = [x.split()[1] for x in res.stdout.decode('utf-8').split('\n')[2:-1]]
@@ -12,7 +12,7 @@ def get_audio_timecode_file(audio_path, frames, channel):
         return '-'
 
 
-def get_video_timecode_file(video_path, frames, channel):
+def get_timecode_video_file(video_path, frames, channel):
     vid = editor.VideoFileClip(video_path)
     audio = vid.audio
 
@@ -28,27 +28,27 @@ def get_video_timecode_file(video_path, frames, channel):
     return tc
 
 
-def get_audio_timecode(path, frames, channel):
+def get_timecode_audio(path, frames, channel):
     if os.path.isdir(path):
         timecodes = {}
         audio_files = [path + '/' + x for x in os.listdir(path)]
         for file in audio_files:
-            timecodes[file] = get_audio_timecode_file(file, frames, channel)
+            timecodes[file] = get_timecode_audio_file(file, frames, channel)
 
         return timecodes
 
     else:
-        return get_audio_timecode_file(path, frames, channel)
+        return get_timecode_audio_file(path, frames, channel)
 
 
-def get_video_timecode(path, frames, channel):
+def get_timecode_video(path, frames, channel):
     if os.path.isdir(path):
         timecodes = {}
         video_files = [path + '/' + x for x in os.listdir(path)]
         for file in video_files:
-            timecodes[file] = get_video_timecode(file, frames, channel)
+            timecodes[file] = get_timecode_video_file(file, frames, channel)
 
         return timecodes
 
     else:
-        return get_video_timecode_file(path, frames, channel)
+        return get_timecode_video_file(path, frames, channel)
