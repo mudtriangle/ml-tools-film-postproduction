@@ -76,7 +76,10 @@ def classify_shot_file(video_path):
         sum_of_shots += type_of_shot[i] * count[i]
         total_shots += count[i]
 
-    mean_shot = sum_of_shots / total_shots
+    try:
+        mean_shot = sum_of_shots / total_shots
+    except ZeroDivisionError:
+        return 'Not recognized'
     if 0.9 > mean_shot % 1 > 0.1:
         return SHOTS[math.ceil(mean_shot)] + ' or ' + SHOTS[math.floor(mean_shot)]
     else:

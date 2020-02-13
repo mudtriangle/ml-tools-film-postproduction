@@ -152,9 +152,9 @@ class Screenplay:
 
         match = np.argmax(scores)
         if scores[match] == 0:
-            return None
+            return -1
         else:
-            return match
+            return int(match)
 
     def __str__(self):
         # When called to print, print the text in every scene separated by a return character.

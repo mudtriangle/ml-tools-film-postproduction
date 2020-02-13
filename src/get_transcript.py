@@ -13,7 +13,7 @@ client = speech_v1.SpeechClient.from_service_account_json('../api_keys/google_cl
 
 def get_transcript_audio_file(audio_path):
     parent_dir = '/'.join(audio_path.split('/')[:-1])
-    temp_dir = parent_dir + '/../temp'
+    temp_dir = parent_dir + '/temp'
     fname = audio_path.split('/')[-1]
     try:
         os.mkdir(temp_dir)
@@ -52,9 +52,10 @@ def get_transcript_audio_file(audio_path):
             transcript[int(t / 1000)].append(alternative.transcript)
 
         os.remove(temp_dir + '/' + str(int(t / SIZE)) + '_' + fname)
-        os.remove(temp_dir)
 
-        return transcript
+    os.rmdir(temp_dir)
+
+    return transcript
 
 
 def get_transcript_video_file(video_path):

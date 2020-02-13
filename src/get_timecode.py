@@ -4,7 +4,8 @@ from moviepy import editor
 
 
 def get_timecode_audio_file(audio_path, frames, channel):
-    res = subprocess.run(['ltcdump', audio_path, '-f', frames, '-c', channel], stdout=subprocess.PIPE)
+    fnull = open(os.devnull, 'w')
+    res = subprocess.run(['ltcdump', audio_path, '-f', frames, '-c', channel], stdout=subprocess.PIPE, stderr=fnull)
     try:
         output = [x.split()[1] for x in res.stdout.decode('utf-8').split('\n')[2:-1]]
         return output[0] + ' ' + output[-1]
@@ -20,7 +21,7 @@ def get_timecode_video_file(video_path, frames, channel):
     output_path.append('wav')
     output_path = '.'.join(output_path)
 
-    audio.write_audiofile(output_path)
+    audio.write_audiofile(output_path, verbose=False)
 
     tc = get_timecode_audio_file(output_path, frames, channel)
 
