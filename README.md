@@ -14,4 +14,6 @@ Done:
 
 
 To do:
-  * Output the data in a way that can be imported into Non-Linear Editing software.
+  * Develop an Adobe Premire Pro plug-in in C++.
+  * Update the scene-transcript matching using Jaccard.
+
