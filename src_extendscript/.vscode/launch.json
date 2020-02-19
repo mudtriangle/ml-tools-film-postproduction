@@ -1,0 +1,28 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+
+        {
+            "type": "extendscript-debug",
+            "request": "launch",
+            "name": "Debug in PPro",
+            "program": "${workspaceFolder}/jsx/PPRO/Premiere.jsx",
+            "stopOnEntry": false
+        },
+        {
+            "type": "extendscript-debug",
+            "request": "attach",
+            "name": "Attach to Chrome",
+            "port": 7777,
+            "program": "${workspaceFolder}/jsx/PPRO/Premiere.jsx",
+            "webRoot": "${workspaceRoot}"
+        },
+        {
+            "type": "extendscript-debug",
+            "request": "launch",
+            "name": "test-ppro",
+            "program": "${workspaceFolder}/jsx/main_functions.jsx",
+            "stopOnEntry": false
+        }
+    ]
+}
