@@ -18,5 +18,5 @@ google-cloud-speech==1.2.0
 
 # Video/Audio processing:
 moviepy==1.0.1
-opencv-python==4.1.1.26
+opencv-python==4.2.0.32
 pydub==0.23.1
